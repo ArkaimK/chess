@@ -28,15 +28,17 @@ class Game_State():
 
         # В мувлоге лежит дефолтное состояние доски как первый элемент
     def make_move(self, move):
-        
+        if move.movedpiece != "--":
             self.board[move.first_row][move.first_column] = "--"
             self.board[move.second_row][move.second_column] = move.movedpiece
             #делает ход, меняя местами два кликнутых значения в board
-            if move.castling:                               #--------------------не работает------------------
-                print("ошибка не тут")
-                self.board[7][5] = self.board[7][7]
-                self.board[7][7] = '--'
-
+            if move.castling:
+                if move.second_column - move.first_column == 2:
+                    self.board[move.second_row][move.second_column-1] = self.board[move.second_row][move.second_column+1]
+                    self.board[move.second_row][move.second_column+1] = '--'
+                else:
+                    self.board[move.second_row][move.second_column+1] = self.board[move.second_row][move.second_column-2]
+                    self.board[move.second_row][move.second_column-2] = '--'
             self.move_log.append(move)
             #В мувлог записывается класс мув (координаты первой, второй нажатых клеток, двинутой и съеденой фигуры)
             self.whitetomove = not self.whitetomove
@@ -74,10 +76,13 @@ class Game_State():
             self.board[move.first_row][move.first_column] = move.movedpiece
             self.board[move.second_row][move.second_column] = move.capturedpiece
             #Выдергивает последний элемент в мувлоге(объект класс) и на основе него отменяет ход
-            if move.castling:                                                                           #--------------------------------------------
-                print("ошибка не тут")
-                self.board[7][7] = self.board[7][5]
-                self.board[7][5] = '--'
+            if move.castling:
+                if move.second_column - move.first_column == 2:
+                    self.board[move.second_row][move.second_column+1] = self.board[move.second_row][move.second_column-1]
+                    self.board[move.second_row][move.second_column-1] = '--'
+                else:
+                    self.board[move.second_row][move.second_column-2] = self.board[move.second_row][move.second_column+1]
+                    self.board[move.second_row][move.second_column+1] = '--'
 
             self.whitetomove = not self.whitetomove
             # отмена координат королей
@@ -276,10 +281,26 @@ class Game_State():
         castlemoves = []
         if self.whitetomove:
             if self.kingsidecastle_white:
-                if not self.check():                       #---------------------------------------------------------
+                if not self.check():
                     if self.board[row][column+1] == '--' and self.board[row][column+2] == '--':
                         if not self.square_under_attack(row, column+1) and not self.square_under_attack(row, column+2):
-                           castlemoves.append(move((row, column),(row, column+2), self.board, castling=True))#не двигает ладью
+                           castlemoves.append(move((row, column),(row, column+2), self.board, castling=True))
+            if self.queensidecastle_white:
+                if not self.check():
+                    if self.board[row][column-1] == '--' and self.board[row][column-2] == '--' and self.board[row][column-3] == '--':
+                        if not self.square_under_attack(row, column-1) and not self.square_under_attack(row, column-2):
+                           castlemoves.append(move((row, column),(row, column-2), self.board, castling=True))
+        else:
+            if self.kingsidecastle_black:
+                if not self.check():
+                    if self.board[row][column+1] == '--' and self.board[row][column+2] == '--':
+                        if not self.square_under_attack(row, column+1) and not self.square_under_attack(row, column+2):
+                           castlemoves.append(move((row, column),(row, column+2), self.board, castling=True))
+            if self.queensidecastle_black:
+                if not self.check():
+                    if self.board[row][column-1] == '--' and self.board[row][column-2] == '--' and self.board[row][column-3] == '--':
+                        if not self.square_under_attack(row, column-1) and not self.square_under_attack(row, column-2):
+                           castlemoves.append(move((row, column),(row, column-2), self.board, castling=True))
         return castlemoves
 
         

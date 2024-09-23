@@ -90,6 +90,12 @@ while running:
                     Game_State.undo_move()
                     move_was_made = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_button_pressed = True    # raise the flag
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if not mouse_button_pressed:
+                # simply ignore 
+                continue
+            mouse_button_pressed = False
             row = (mouse_position[1]-int(WIDTH*0.05))//SQ_SIZE
             column = (mouse_position[0]-int(WIDTH*0.05))//SQ_SIZE
             if -1 < row < 8 and -1 < column < 8:
@@ -98,6 +104,8 @@ while running:
             if len(player_clicks) == 2:
                 if player_clicks[0] != player_clicks[1]:
                     move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board)
+                    if Game_State.board[player_clicks[0][0]][player_clicks[0][1]][1] == 'K' and abs(player_clicks[0][1]-player_clicks[1][1]) == 2:
+                        move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board, castling=True) #Кастыль для рокировки
                     if move in Game_State.validmoves(Game_State.possiblemoves()):
                         Game_State.make_move(move)
                         move_was_made = True
