@@ -60,7 +60,7 @@ def active_piece(row, column):
     moves = []
     if (piece[0] == 'w' and Game_State.whitetomove) or (piece[0] == 'b' and not Game_State.whitetomove) and piece[1] != '-':
         Game_State.move_functions[piece[1]](row, column, moves)
-        pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 4)
+        pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
     moves = Game_State.validmoves(moves)
     for i in moves:
         #Костыль, чтобы не подсвечивал возможные рокировки вместе с другими валидными ходами
