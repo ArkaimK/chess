@@ -39,6 +39,7 @@ class Game_State():
                 else:
                     self.board[move.second_row][move.second_column+1] = self.board[move.second_row][move.second_column-2]
                     self.board[move.second_row][move.second_column-2] = '--'
+            # Дополнение к обычному ходу, если рокировка
             self.move_log.append(move)
             #В мувлог записывается класс мув (координаты первой, второй нажатых клеток, двинутой и съеденой фигуры)
             self.whitetomove = not self.whitetomove
@@ -83,7 +84,7 @@ class Game_State():
                 else:
                     self.board[move.second_row][move.second_column-2] = self.board[move.second_row][move.second_column+1]
                     self.board[move.second_row][move.second_column+1] = '--'
-
+            # Дополнение к отмене обычного хода, если рокировка
             self.whitetomove = not self.whitetomove
             # отмена координат королей
             if move.movedpiece == "wK":

@@ -18,7 +18,7 @@ SQ_BORDER_COLOR = (200, 200, 200)
 
 images = {}
 def load_imgages(): #запускается 1 раз до главного цикла while
-    pieces = ("bB", "bK", "bN", "bP", "bQ", "bR", "wB", "wK", "wN", "wP", "wQ", "wR")
+    pieces = ("bB", "bK", "bN", "bP", "bQ", "bR", "wB", "wK", "wN", "wP", "wQ", "wR", 'valid_move', 'valid_move2')
     for piece in pieces:
         images[piece] = pygame.transform.scale(pygame.image.load(f'chess/images/{piece}.png'), (SQ_SIZE,SQ_SIZE))
 # библиотека key = называние фигуры, value = путь до картинки
@@ -60,10 +60,16 @@ def active_piece(row, column):
     moves = []
     if (piece[0] == 'w' and Game_State.whitetomove) or (piece[0] == 'b' and not Game_State.whitetomove) and piece[1] != '-':
         Game_State.move_functions[piece[1]](row, column, moves)
-        pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 2)
+        pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 4)
     moves = Game_State.validmoves(moves)
     for i in moves:
-        pygame.draw.rect(screen, SQ_BORDER_COLOR, (i.second_column*SQ_SIZE+WIDTH*0.05, i.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 2)
+        #Костыль, чтобы не подсвечивал возможные рокировки вместе с другими валидными ходами
+        if (i.castling and piece != 'wK' and Game_State.whitetomove) or (i.castling and piece != 'bK' and not Game_State.whitetomove):
+            continue  
+        if i.capturedpiece == '--':
+            screen.blit(images['valid_move'], (i.second_column*SQ_SIZE+WIDTH*0.05, i.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
+        else:
+            screen.blit(images['valid_move2'], (i.second_column*SQ_SIZE+WIDTH*0.05, i.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
  #def main()
  #  if __name__ == "__main__":  
  #      main()   
@@ -104,8 +110,9 @@ while running:
             if len(player_clicks) == 2:
                 if player_clicks[0] != player_clicks[1]:
                     move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board)
+                    #Костыль для рокировки
                     if Game_State.board[player_clicks[0][0]][player_clicks[0][1]][1] == 'K' and abs(player_clicks[0][1]-player_clicks[1][1]) == 2:
-                        move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board, castling=True) #Кастыль для рокировки
+                        move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board, castling=True) 
                     if move in Game_State.validmoves(Game_State.possiblemoves()):
                         Game_State.make_move(move)
                         move_was_made = True
