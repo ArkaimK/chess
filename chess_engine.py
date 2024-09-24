@@ -144,9 +144,6 @@ class Game_State():
                 self.checkmate = True
             else:
                 self.stalemate = True
-        else:
-            self.checkmate = False
-            self.stalemate = False #возвращаем состояния шаха и мата на случай, если они происходят в "фантомных ходах"
         self.enpassantpossible = temp_empassanpossible
         return moves+castlingmoves
 
