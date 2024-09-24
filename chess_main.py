@@ -6,7 +6,7 @@ pygame.init()
 
 WIDTH = HEIGHT = 848
 SQ_SIZE = WIDTH//8
-screen = pygame.display.set_mode((WIDTH+WIDTH*0.1+WIDTH*0.5, HEIGHT+WIDTH*0.1))
+screen = pygame.display.set_mode((WIDTH+WIDTH*0.1, HEIGHT+WIDTH*0.1))
 Game_State = chess_engine.Game_State()
 FPS = 30  
 clock = pygame.time.Clock()
