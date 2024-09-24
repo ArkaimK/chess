@@ -112,14 +112,19 @@ while running:
                     move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board)
                     #Костыль для рокировки
                     if Game_State.board[player_clicks[0][0]][player_clicks[0][1]][1] == 'K' and abs(player_clicks[0][1]-player_clicks[1][1]) == 2:
-                        move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board, castling=True) 
+                        move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board, castling=True)
+                    #Костыль для анпасана
+                    if Game_State.board[player_clicks[0][0]][player_clicks[0][1]][1] == 'P' and player_clicks[1] == Game_State.enpassantpossible:
+                        move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board, enpassant=True)
+                        
                     if move in Game_State.validmoves(Game_State.possiblemoves()):
                         Game_State.make_move(move)
                         move_was_made = True
                         last_click = ()
                         player_clicks = []
                         print(move.get_movenotation())
-                        print(Game_State.castle_log[-1])
+                        #print(Game_State.castle_log[-1])
+                        #print(Game_State.enpassantpossible)
                     else:
                         last_click = (row, column)
                         player_clicks = []
