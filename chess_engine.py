@@ -168,7 +168,7 @@ class Game_State():
             for column in range(8):
                 color = self.board[row][column][0]
                 if (color == "w" and self.whitetomove) or (color == "b" and not self.whitetomove):
-                    piece = self.board[row][column][1]    
+                    piece = self.board[row][column][1]
                     self.move_functions[piece](row, column, moves)
         return moves
 
