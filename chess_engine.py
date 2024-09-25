@@ -306,28 +306,29 @@ class Game_State():
 
     def castlemoves(self, row, column):
         castlemoves = []
-        if self.whitetomove:
-            if self.kingsidecastle_white:
-                if not self.check():
-                    if self.board[row][column+1] == '--' and self.board[row][column+2] == '--':
-                        if not self.square_under_attack(row, column+1) and not self.square_under_attack(row, column+2):
-                           castlemoves.append(move((row, column),(row, column+2), self.board, castling=True))
-            if self.queensidecastle_white:
-                if not self.check():
-                    if self.board[row][column-1] == '--' and self.board[row][column-2] == '--' and self.board[row][column-3] == '--':
-                        if not self.square_under_attack(row, column-1) and not self.square_under_attack(row, column-2):
-                           castlemoves.append(move((row, column),(row, column-2), self.board, castling=True))
-        else:
-            if self.kingsidecastle_black:
-                if not self.check():
-                    if self.board[row][column+1] == '--' and self.board[row][column+2] == '--':
-                        if not self.square_under_attack(row, column+1) and not self.square_under_attack(row, column+2):
-                           castlemoves.append(move((row, column),(row, column+2), self.board, castling=True))
-            if self.queensidecastle_black:
-                if not self.check():
-                    if self.board[row][column-1] == '--' and self.board[row][column-2] == '--' and self.board[row][column-3] == '--':
-                        if not self.square_under_attack(row, column-1) and not self.square_under_attack(row, column-2):
-                           castlemoves.append(move((row, column),(row, column-2), self.board, castling=True))
+        if self.board[row][column][1] == 'K':
+            if self.whitetomove:
+                if self.kingsidecastle_white:
+                    if not self.check():
+                        if self.board[row][column+1] == '--' and self.board[row][column+2] == '--':
+                            if not self.square_under_attack(row, column+1) and not self.square_under_attack(row, column+2):
+                                castlemoves.append(move((row, column),(row, column+2), self.board, castling=True))
+                if self.queensidecastle_white:
+                    if not self.check():
+                        if self.board[row][column-1] == '--' and self.board[row][column-2] == '--' and self.board[row][column-3] == '--':
+                            if not self.square_under_attack(row, column-1) and not self.square_under_attack(row, column-2):
+                                castlemoves.append(move((row, column),(row, column-2), self.board, castling=True))
+            else:
+                if self.kingsidecastle_black:
+                    if not self.check():
+                        if self.board[row][column+1] == '--' and self.board[row][column+2] == '--':
+                            if not self.square_under_attack(row, column+1) and not self.square_under_attack(row, column+2):
+                                castlemoves.append(move((row, column),(row, column+2), self.board, castling=True))
+                if self.queensidecastle_black:
+                    if not self.check():
+                        if self.board[row][column-1] == '--' and self.board[row][column-2] == '--' and self.board[row][column-3] == '--':
+                            if not self.square_under_attack(row, column-1) and not self.square_under_attack(row, column-2):
+                                castlemoves.append(move((row, column),(row, column-2), self.board, castling=True))
         return castlemoves
 
         

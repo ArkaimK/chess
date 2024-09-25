@@ -65,7 +65,7 @@ def active_piece(row, column):
     piece_moves = Game_State.castlemoves(row, column)
     if (piece[0] == 'w' and Game_State.whitetomove) or (piece[0] == 'b' and not Game_State.whitetomove) and piece[1] != '-':
         Game_State.move_functions[piece[1]](row, column, piece_moves)
-    pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
+        pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
     for i in piece_moves:
         if i in validmoves:
             if i.capturedpiece == '--':
