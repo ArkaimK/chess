@@ -21,6 +21,7 @@ class Game_State():
         self.stalemate = False
 
         self.castle_log = []
+        self.captured_pieces = []
         self.queensidecastle_white = True
         self.kingsidecastle_white = True
         self.queensidecastle_black = True
@@ -54,6 +55,7 @@ class Game_State():
             
             self.move_log.append(move)
             #В мувлог записывается класс мув (координаты первой, второй нажатых клеток, двинутой и съеденой фигуры)
+
             self.whitetomove = not self.whitetomove
 
             if move.movedpiece == "wK":
@@ -109,8 +111,6 @@ class Game_State():
                 self.enpassantpossible = ()
             #значения клетки теоретически возможного анпасана
             
-            self.whitetomove = not self.whitetomove
-            
             if move.movedpiece == "wK":
                 self.whiteking_location = (move.first_row, move.first_column)
             elif move.movedpiece == "bK":
@@ -125,12 +125,14 @@ class Game_State():
             self.kingsidecastle_black = last[3]
             del self.castle_log[-1]
             #откат мувлога возможности рокировок и присвоение предыдущих значений
+        self.checkmate = False
+        self.stalemate = False
 
     
 
-    def validmoves(self, possible_moves): #фильтрует ходы с возможных до валидных в переданном списке(пропускает рокировку без фильтра)
+    def validmoves(self): #фильтрует ходы с возможных до валидных в переданном списке(пропускает рокировку без фильтра)
         temp_empassanpossible = self.enpassantpossible
-        moves = possible_moves
+        moves = self.possiblemoves()
         castlingmoves = self.castlemoves(self.whiteking_location[0], self.whiteking_location[1]) if self.whitetomove else self.castlemoves(self.blackking_location[0], self.blackking_location[1])#рокировка не проходит проверку ниже, тк вызывает рекурсию, имеет проверку внутри себя
         for i in range(len(moves)-1, -1, -1):
             self.make_move(moves[i]) #Делает "фантомный ход" для каджого из возможного в списке
@@ -210,7 +212,7 @@ class Game_State():
                 elif (row+1, column+1) == self.enpassantpossible:
                     moves.append(move((row, column),(row+1, column+1), self.board, enpassant=True))
 
-    def rookmoves(self, row, column, moves):#Сканирует каждую из сторон
+    def rookmoves(self, row, column, moves):#Сканирует каждую из сторон по вертикали и горизонтали
             opponentcolor = 'b' if self.whitetomove else 'w'
             alliescolor = 'w' if self.whitetomove else 'b'
             for i in range(1,row+1):#вверх
@@ -252,7 +254,7 @@ class Game_State():
                             if self.board[r][c][0] == opponentcolor or self.board[r][c][0] == '-':
                                 moves.append(move((row, column),(r, c), self.board))
      
-    def bishopmoves(self, row, column, moves):# питон его знает, в бубен стукнуть надо, чтобы работало
+    def bishopmoves(self, row, column, moves):# Сканирует каждую из сторон по диагонали
         opponentcolor = 'b' if self.whitetomove else 'w'
         alliescolor = 'w' if self.whitetomove else 'b'
         for i in range(1,7):
@@ -364,5 +366,32 @@ class move():# Первая и вторая нажатые клетки, дви�
     def get_rankfile(self, row, column): #возвращает строку с кординатой клетки 'e2'
         return self.columns_to_files[column] + self.rows_to_ranks[row]
 
-    def get_movenotation(self): #Дальше реализовать тут все общепринятые правила записи ходов
-        return self.get_rankfile(self.first_row, self.first_column) + self.get_rankfile(self.second_row, self.second_column)
+    def notchekmoves(self):
+        if self.movedpiece[1] == 'P':
+            if self.capturedpiece == '--':
+                return self.get_rankfile(self.second_row, self.second_column)
+            else:
+                return 'x' + self.get_rankfile(self.second_row, self.second_column)
+        elif self.castling==True:
+                if self.second_column == 6:
+                    return 'O-O'
+                else:
+                    return 'O-O-O'
+        else:
+            if self.capturedpiece == '--':
+                # здесь прописать случаи, когда два коня(ладьи, ферзя, слона), могут сходить на одну клетку, находясь при этом на одной линии
+                return self.movedpiece[1] + self.get_rankfile(self.second_row, self.second_column)
+            else:
+                return self.movedpiece[1] + 'x' + self.get_rankfile(self.second_row, self.second_column)
+
+    def get_movenotation(self, gamestate, validmoves):
+        if len(validmoves) != 0: 
+            if not gamestate.check():
+                return self.notchekmoves()
+            elif gamestate.check() and not gamestate.checkmate:
+                return self.notchekmoves()+'+'
+        else:
+            if gamestate.checkmate:
+                return self.notchekmoves()+'#'
+            else:
+                return self.notchekmoves()+'$'

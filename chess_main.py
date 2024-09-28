@@ -1,14 +1,14 @@
 ###       Input and display        ###
 
 import pygame
-import chess_engine
+import chess_engine, AI
 pygame.init()
 
-WIDTH = HEIGHT = 848
+WIDTH = HEIGHT = 800
 SQ_SIZE = WIDTH//8
-screen = pygame.display.set_mode((WIDTH+WIDTH*0.1, HEIGHT+WIDTH*0.1))
+screen = pygame.display.set_mode((WIDTH+WIDTH*0.1+WIDTH*0.5, HEIGHT+WIDTH*0.1))
 Game_State = chess_engine.Game_State()
-FPS = 30  
+FPS = 15
 clock = pygame.time.Clock()
 
 WHITE_SQ = (104, 113, 130)
@@ -34,7 +34,6 @@ def draw_board(screen):
                     pygame.draw.rect(screen, DARK_SQ, (row*SQ_SIZE+WIDTH*0.05, column*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
                 else:
                     pygame.draw.rect(screen, DARK_SQ, (row*SQ_SIZE+SQ_SIZE+WIDTH*0.05, column*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
-    
 
 def draw_pieces(screen, board):
     for row in range(8):
@@ -44,14 +43,39 @@ def draw_pieces(screen, board):
                 screen.blit(images[piece], (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05))
                 #вызывает key из библиотеки images, возвращает картинку фигуры по координатам
 
+def draw_board_for_black(screen):
+    pygame.draw.rect(screen, BORDER_COLOR, (0, 0, WIDTH+WIDTH*0.1, HEIGHT+WIDTH*0.1))
+    pygame.draw.rect(screen, DARK_SQ, (0+WIDTH*0.05, 0+WIDTH*0.05, WIDTH, HEIGHT))
+    for column in range(8):
+        for row in range(0, 8, 2):
+                if column % 2 != 0:
+                    pygame.draw.rect(screen, WHITE_SQ, (row*SQ_SIZE+WIDTH*0.05, column*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
+                else:
+                    pygame.draw.rect(screen, WHITE_SQ, (row*SQ_SIZE+SQ_SIZE+WIDTH*0.05, column*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
+
+def draw_pieces_for_black(screen, board):
+    for row in range(8):
+        for column in range(8):
+            piece = board[-row-1][-column-1]
+            if piece != "--":
+                screen.blit(images[piece], (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05))
+
 def draw_gamestate(screen, Game_State):
     draw_board(screen)
-    if len(Game_State.move_log) !=0:
+    if len(Game_State.move_log) != 0:
         highlight_lastmove(Game_State.move_log[-1])
     if len(player_clicks) == 1:
         active_piece(last_click[0], last_click[1])
     draw_pieces(screen, Game_State.board)
     #active_SQ(mouse_position[0], mouse_position[1])
+
+def draw_gamestate_for_black(screen, Game_State):
+    draw_board_for_black(screen)
+    if len(Game_State.move_log) != 0:
+        highlight_lastmove(Game_State.move_log[-1])
+    if len(player_clicks) == 1:
+        active_piece(last_click[0], last_click[1])
+    draw_pieces_for_black(screen, Game_State.board)
 
 def active_SQ(x, y):
     for row in range(8):
@@ -63,21 +87,48 @@ def active_SQ(x, y):
 def active_piece(row, column):
     piece = Game_State.board[row][column]
     piece_moves = Game_State.castlemoves(row, column)
-    if (piece[0] == 'w' and Game_State.whitetomove) or (piece[0] == 'b' and not Game_State.whitetomove) and piece[1] != '-':
+    if piece[1] != '-':
         Game_State.move_functions[piece[1]](row, column, piece_moves)
-        pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
     for i in piece_moves:
         if i in validmoves:
-            if i.capturedpiece == '--':
-                screen.blit(images['valid_move'], (i.second_column*SQ_SIZE+WIDTH*0.05, i.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
+            if Game_State.whitetomove:
+                pygame.draw.rect(screen, SQ_BORDER_COLOR, (column*SQ_SIZE+WIDTH*0.05, row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
+                if i.capturedpiece == '--':
+                    screen.blit(images['valid_move'], (i.second_column*SQ_SIZE+WIDTH*0.05, i.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
+                else:
+                    screen.blit(images['valid_move2'], (i.second_column*SQ_SIZE+WIDTH*0.05, i.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
             else:
-                screen.blit(images['valid_move2'], (i.second_column*SQ_SIZE+WIDTH*0.05, i.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
+                pygame.draw.rect(screen, SQ_BORDER_COLOR, ((7-column)*SQ_SIZE+WIDTH*0.05, (7-row)*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
+                if i.capturedpiece == '--':
+                    screen.blit(images['valid_move'], ((7-i.second_column)*SQ_SIZE+WIDTH*0.05, (7-i.second_row)*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
+                else:
+                    screen.blit(images['valid_move2'], ((7-i.second_column)*SQ_SIZE+WIDTH*0.05, (7-i.second_row)*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
 
 def highlight_lastmove(move):
-    pygame.draw.rect(screen, SQ_BORDER_COLOR, (move.first_column*SQ_SIZE+WIDTH*0.05, move.first_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
-    pygame.draw.rect(screen, SQ_BORDER_COLOR, (move.second_column*SQ_SIZE+WIDTH*0.05, move.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
+    if playerOne:
+        pygame.draw.rect(screen, SQ_BORDER_COLOR, (move.first_column*SQ_SIZE+WIDTH*0.05, move.first_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
+        pygame.draw.rect(screen, SQ_BORDER_COLOR, (move.second_column*SQ_SIZE+WIDTH*0.05, move.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
+    else:
+        pygame.draw.rect(screen, SQ_BORDER_COLOR, (((7-move.first_column)*SQ_SIZE+WIDTH*0.05), ((7-move.first_row)*SQ_SIZE+WIDTH*0.05), SQ_SIZE, SQ_SIZE), 6)
+        pygame.draw.rect(screen, SQ_BORDER_COLOR, (((7-move.second_column)*SQ_SIZE+WIDTH*0.05), ((7-move.second_row)*SQ_SIZE+WIDTH*0.05), SQ_SIZE, SQ_SIZE), 6)
 
-def drawText(screen, text):
+def draw_move_log(screen, move_log, move_notation):   # не отменяется
+    #move_log_rect = pygame.Rect(WIDTH+WIDTH*0.1, 0, WIDTH*0.5, HEIGHT+HEIGHT*0.1)
+    #pygame.draw.rect(screen, (32, 35, 42), move_log_rect)
+    if len(move_log)>0:
+        for i in range(0, len(move_log), 2):
+            movestring = f'{i//2 + 1}. {move_notation}'
+            if i+1 < len(move_log):
+                movestring = f'                    {move_notation}' 
+            text_location = (WIDTH+WIDTH*0.1, WIDTH//95*i)
+            if len(move_log) > 100:
+                text_location = (WIDTH+WIDTH*0.1 + SQ_SIZE*2, WIDTH//95*(i-100))
+        font = pygame.font.SysFont('Helvicta', WIDTH//35, True, False)
+        text_object = font.render(movestring, True, SQ_BORDER_COLOR)
+        
+        screen.blit(text_object, text_location)
+
+def draw_endgame_text(screen, text):
     font = pygame.font.SysFont('Helvicta', 32, True, False)
     text_object = font.render(text, 0, SQ_BORDER_COLOR)
     text_location = pygame.Rect(0,0, WIDTH, HEIGHT).move(WIDTH/2 - text_object.get_width()/2, HEIGHT/2 - text_object.get_height()/2)
@@ -91,23 +142,33 @@ def drawText(screen, text):
 mouse_position = (0, 0) #стартовая позиция мыши для active_SQ
 last_click = () #(row, col)
 player_clicks = [] # [(row, col),(row, col)]
-load_imgages()
-draw_gamestate(screen, Game_State)
-validmoves = Game_State.validmoves(Game_State.possiblemoves()) #список легальных ходов для начала партии
+running = True
+playerOne = False
+playerTwo = False
+validmoves = Game_State.validmoves() #список легальных ходов для начала партии
 gameover = False
 move_was_made = False #флаг для вычисления легальных ходов только после совершения хода
-running = True
+load_imgages()
+
+if playerOne:# отрисовка доски с точки зрения первого или второго игрока
+    draw_gamestate(screen, Game_State)
+else:
+    draw_gamestate_for_black(screen, Game_State)
+
+
 while running:
+    human_turn = (playerOne and Game_State.whitetomove) or (playerTwo and not Game_State.whitetomove)
+    #Ход игрока
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_BACKSPACE:
                     Game_State.undo_move()
-                    Game_State.checkmate = False
-                    Game_State.stalemate = False
+                    Game_State.undo_move()
                     gameover = False
                     move_was_made = True
+                    validmoves = Game_State.validmoves()
         elif event.type == pygame.MOUSEMOTION:
             mouse_position = event.pos
             #print(mouse_position)
@@ -118,9 +179,13 @@ while running:
                 # simply ignore 
                 continue
             mouse_button_pressed = False
-            if not gameover:
-                row = (mouse_position[1]-int(WIDTH*0.05))//SQ_SIZE
-                column = (mouse_position[0]-int(WIDTH*0.05))//SQ_SIZE
+            if not gameover and human_turn: #Ограничение команд от мыши во время хода ИИ
+                if Game_State.whitetomove:
+                    row = (mouse_position[1]-int(WIDTH*0.05))//SQ_SIZE
+                    column = (mouse_position[0]-int(WIDTH*0.05))//SQ_SIZE
+                else:
+                    row = 7-(mouse_position[1]-int(WIDTH*0.05))//SQ_SIZE
+                    column = 7-(mouse_position[0]-int(WIDTH*0.05))//SQ_SIZE
                 if -1 < row < 8 and -1 < column < 8:
                     last_click = (row, column)
                     player_clicks.append(last_click)
@@ -137,10 +202,8 @@ while running:
                             Game_State.make_move(move)
                             last_click = ()
                             player_clicks = []
-                            print(move.get_movenotation())
                             move_was_made = True
-                            #print(Game_State.castle_log[-1])
-                            #print(Game_State.enpassantpossible)
+                            
                         else:
                             last_click = (row, column)
                             player_clicks = []
@@ -148,23 +211,37 @@ while running:
                     else:
                         last_click = ()
                         player_clicks = []
-                        #print("canceled")
                         #Дважды нажатая одна и та же клетка не произведет хода, действие мышкой отменяется
-                if move_was_made:
-                    validmoves = Game_State.validmoves(Game_State.possiblemoves())
-                    move_was_made = False   
-    draw_gamestate(screen, Game_State)
+    #Ход ИИ
+    if not gameover and not human_turn:
+        AImove = AI.random_move(validmoves)
+        Game_State.make_move(AImove)
+        move_was_made = True
+        
+
+    if move_was_made:
+        validmoves = Game_State.validmoves()
+        if human_turn:
+            move_notation = move.get_movenotation(Game_State, validmoves)
+        else:
+            move_notation = AImove.get_movenotation(Game_State, validmoves)
+        draw_move_log(screen, Game_State.move_log, move_notation)
+        move_was_made = False
+        
+    if playerOne: # отрисовка доски с точки зрения первого или второго игрока
+        draw_gamestate(screen, Game_State)
+    else:
+        draw_gamestate_for_black(screen, Game_State)
+
     if Game_State.checkmate:
         gameover = True
         if Game_State.whitetomove:
-            drawText(screen, ('BLACK WINS BY CHECKMATE'))
+            draw_endgame_text(screen, ('BLACK WINS BY CHECKMATE'))
         else:
-            drawText(screen, ('WHITE WINS BY CHECKMATE'))
+            draw_endgame_text(screen, ('WHITE WINS BY CHECKMATE'))
     elif Game_State.stalemate:
             gameover = True
-            drawText(screen, ('STALEMATE'))
-     
-    
+            draw_endgame_text(screen, ('STALEMATE'))
 
     clock.tick(FPS)
     #Функция clock.tick() приостанавливает выполнение кода до тех пор, пока не пройдет достаточно времени, чтобы достичь нужной частоты кадров.
