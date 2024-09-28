@@ -21,7 +21,6 @@ class Game_State():
         self.stalemate = False
 
         self.castle_log = []
-        self.captured_pieces = []
         self.queensidecastle_white = True
         self.kingsidecastle_white = True
         self.queensidecastle_black = True
@@ -55,7 +54,6 @@ class Game_State():
             
             self.move_log.append(move)
             #В мувлог записывается класс мув (координаты первой, второй нажатых клеток, двинутой и съеденой фигуры)
-
             self.whitetomove = not self.whitetomove
 
             if move.movedpiece == "wK":
@@ -110,6 +108,8 @@ class Game_State():
             if move.movedpiece[1] == 'P' and abs(move.first_row - move.second_row) == 2:
                 self.enpassantpossible = ()
             #значения клетки теоретически возможного анпасана
+            
+            self.whitetomove = not self.whitetomove
             
             if move.movedpiece == "wK":
                 self.whiteking_location = (move.first_row, move.first_column)

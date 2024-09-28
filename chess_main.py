@@ -115,18 +115,19 @@ def highlight_lastmove(move):
 def draw_move_log(screen, move_log, move_notation):   # не отменяется
     #move_log_rect = pygame.Rect(WIDTH+WIDTH*0.1, 0, WIDTH*0.5, HEIGHT+HEIGHT*0.1)
     #pygame.draw.rect(screen, (32, 35, 42), move_log_rect)
-    if len(move_log)>0:
-        for i in range(0, len(move_log), 2):
-            movestring = f'{i//2 + 1}. {move_notation}'
-            if i+1 < len(move_log):
-                movestring = f'                    {move_notation}' 
-            text_location = (WIDTH+WIDTH*0.1, WIDTH//95*i)
-            if len(move_log) > 100:
-                text_location = (WIDTH+WIDTH*0.1 + SQ_SIZE*2, WIDTH//95*(i-100))
-        font = pygame.font.SysFont('Helvicta', WIDTH//35, True, False)
-        text_object = font.render(movestring, True, SQ_BORDER_COLOR)
-        
-        screen.blit(text_object, text_location)
+    for i in range(0, len(move_log), 2):
+        movestring = f'{i//2 + 1}. {move_notation}'
+        if i+1 < len(move_log):
+            movestring = f'                    {move_notation}' 
+        text_location = (WIDTH+WIDTH*0.1, WIDTH//95*i)
+        if len(move_log) > 100:
+            text_location = (WIDTH+WIDTH*0.1+ SQ_SIZE*1.3, WIDTH//95*(i-100))
+        if len(move_log) > 200:
+            text_location = (WIDTH+WIDTH*0.1+ SQ_SIZE*2.6, WIDTH//95*(i-200))
+    font = pygame.font.SysFont('Helvicta', WIDTH//35, True, False)
+    text_object = font.render(movestring, True, SQ_BORDER_COLOR)
+    
+    screen.blit(text_object, text_location)
 
 def draw_endgame_text(screen, text):
     font = pygame.font.SysFont('Helvicta', 32, True, False)
@@ -211,6 +212,7 @@ while running:
                     else:
                         last_click = ()
                         player_clicks = []
+                        #print("canceled")
                         #Дважды нажатая одна и та же клетка не произведет хода, действие мышкой отменяется
     #Ход ИИ
     if not gameover and not human_turn:
@@ -242,6 +244,8 @@ while running:
     elif Game_State.stalemate:
             gameover = True
             draw_endgame_text(screen, ('STALEMATE'))
+     
+    
 
     clock.tick(FPS)
     #Функция clock.tick() приостанавливает выполнение кода до тех пор, пока не пройдет достаточно времени, чтобы достичь нужной частоты кадров.
