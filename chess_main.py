@@ -115,15 +115,16 @@ def highlight_lastmove(move):
 def draw_move_log(screen, move_log, move_notation):   # не отменяется
     #move_log_rect = pygame.Rect(WIDTH+WIDTH*0.1, 0, WIDTH*0.5, HEIGHT+HEIGHT*0.1)
     #pygame.draw.rect(screen, (32, 35, 42), move_log_rect)
-    for i in range(0, len(move_log), 2):
-        movestring = f'{i//2 + 1}. {move_notation}'
-        if i+1 < len(move_log):
-            movestring = f'                    {move_notation}' 
-        text_location = (WIDTH+WIDTH*0.1, WIDTH//95*i)
-        if len(move_log) > 100:
-            text_location = (WIDTH+WIDTH*0.1+ SQ_SIZE*1.3, WIDTH//95*(i-100))
-        if len(move_log) > 200:
-            text_location = (WIDTH+WIDTH*0.1+ SQ_SIZE*2.6, WIDTH//95*(i-200))
+    if len(move_log) > 0:
+        for i in range(0, len(move_log), 2):
+            movestring = f'{i//2 + 1}. {move_notation}'
+            if i+1 < len(move_log):
+                movestring = f'                    {move_notation}' 
+            text_location = (WIDTH+WIDTH*0.1, WIDTH//95*i)
+            if len(move_log) > 100:
+                text_location = (WIDTH+WIDTH*0.1+ SQ_SIZE*1.3, WIDTH//95*(i-100))
+            if len(move_log) > 200:
+                text_location = (WIDTH+WIDTH*0.1+ SQ_SIZE*2.6, WIDTH//95*(i-200))
     font = pygame.font.SysFont('Helvicta', WIDTH//35, True, False)
     text_object = font.render(movestring, True, SQ_BORDER_COLOR)
     
@@ -144,7 +145,7 @@ mouse_position = (0, 0) #стартовая позиция мыши для activ
 last_click = () #(row, col)
 player_clicks = [] # [(row, col),(row, col)]
 running = True
-playerOne = False
+playerOne = True
 playerTwo = False
 validmoves = Game_State.validmoves() #список легальных ходов для начала партии
 gameover = False
@@ -223,12 +224,13 @@ while running:
 
     if move_was_made:
         validmoves = Game_State.validmoves()
-        if human_turn:
-            move_notation = move.get_movenotation(Game_State, validmoves)
-        else:
-            move_notation = AImove.get_movenotation(Game_State, validmoves)
-        draw_move_log(screen, Game_State.move_log, move_notation)
-        move_was_made = False
+        if len(Game_State.move_log) > 0:
+            if human_turn:
+                move_notation = move.get_movenotation(Game_State, validmoves)
+            else:
+                move_notation = AImove.get_movenotation(Game_State, validmoves)
+            draw_move_log(screen, Game_State.move_log, move_notation)
+            move_was_made = False
         
     if playerOne: # отрисовка доски с точки зрения первого или второго игрока
         draw_gamestate(screen, Game_State)
