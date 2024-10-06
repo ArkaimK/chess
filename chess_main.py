@@ -105,7 +105,7 @@ def active_piece(row, column):
                     screen.blit(images['valid_move2'], ((7-i.second_column)*SQ_SIZE+WIDTH*0.05, (7-i.second_row)*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE))
 
 def highlight_lastmove(move):
-    if playerOne:
+    if playerOne or (not playerOne and not playerTwo):
         pygame.draw.rect(screen, SQ_BORDER_COLOR, (move.first_column*SQ_SIZE+WIDTH*0.05, move.first_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
         pygame.draw.rect(screen, SQ_BORDER_COLOR, (move.second_column*SQ_SIZE+WIDTH*0.05, move.second_row*SQ_SIZE+WIDTH*0.05, SQ_SIZE, SQ_SIZE), 6)
     else:
@@ -176,24 +176,38 @@ def draw_menu(screen):
 mouse_position = (0, 0) #стартовая позиция мыши для active_SQ
 last_click = () #(row, col)
 player_clicks = [] # [(row, col),(row, col)]
+start = False
+mouse_button_pressed = False
 running = True
 playerOne = False
-playerTwo = True
+playerTwo = False
 validmoves = Game_State.validmoves() #список легальных ходов для начала партии
 gameover = False
 move_was_made = False #флаг для вычисления легальных ходов только после совершения хода
 move_notation_log = []                                                                        ####################################################
 load_imgages()
 
-move_log_rect = pygame.Rect(WIDTH+WIDTH*0.1, 0, WIDTH*0.5, HEIGHT+HEIGHT*0.1)                 ####################################################
-pygame.draw.rect(screen, (32, 35, 42), move_log_rect)                                         ####################################################
-if playerOne:# отрисовка доски с точки зрения первого или второго игрока
-    draw_gamestate(screen, Game_State)
-else:
-    draw_gamestate_for_black(screen, Game_State)
 
 
 while running:
+    if not start:
+        draw_menu(screen)
+        if mouse_button_pressed:
+            start = True
+            if  SQ_SIZE*2+WIDTH*0.1 < mouse_position[0] < SQ_SIZE*6+WIDTH*0.1 and SQ_SIZE*2+WIDTH*0.1 < mouse_position[1] < SQ_SIZE*2+WIDTH*0.1+SQ_SIZE:
+                playerOne = False
+                playerTwo = True
+            elif SQ_SIZE*2+WIDTH*0.1 < mouse_position[0] < SQ_SIZE*6+WIDTH*0.1 and SQ_SIZE*5+WIDTH*0.1 < mouse_position[1] < SQ_SIZE*5+WIDTH*0.1+SQ_SIZE:
+                playerOne = True
+                playerTwo = False
+            elif SQ_SIZE*2+WIDTH*0.1 < mouse_position[0] < SQ_SIZE*6+WIDTH*0.1 and SQ_SIZE*3.5+WIDTH*0.1 < mouse_position[1] < SQ_SIZE*3.5+WIDTH*0.1+SQ_SIZE:
+                if (mouse_position[0]+mouse_position[1]) % 2 != 0:
+                    playerOne = False
+                    playerTwo = True
+                else:
+                    playerOne = True
+                    playerTwo = False
+            
     human_turn = (playerOne and Game_State.whitetomove) or (playerTwo and not Game_State.whitetomove)
     #Ход игрока
     for event in pygame.event.get():
@@ -222,8 +236,8 @@ while running:
             if not mouse_button_pressed:
                 # simply ignore 
                 continue
-            mouse_button_pressed = False
-            if not gameover and human_turn: #Ограничение команд от мыши во время хода ИИ
+            mouse_button_pressed = False  # lower the flag
+            if start and not gameover and human_turn: #Ограничение команд от мыши во время хода ИИ
                 if Game_State.whitetomove:
                     row = (mouse_position[1]-int(WIDTH*0.05))//SQ_SIZE
                     column = (mouse_position[0]-int(WIDTH*0.05))//SQ_SIZE
@@ -260,7 +274,7 @@ while running:
                         #print("canceled")
                         #Дважды нажатая одна и та же клетка не произведет хода, действие мышкой отменяется
     #Ход ИИ
-    if not gameover and not human_turn:
+    if start and not gameover and not human_turn:
         AImove = AI.random_move(validmoves)
         Game_State.make_move(AImove)
         validmoves = Game_State.validmoves()
@@ -274,9 +288,9 @@ while running:
             draw_move_log(screen, move_notation_log)                                              #####################################################
             move_was_made = False
         
-    if playerOne: # отрисовка доски с точки зрения первого или второго игрока
+    if start and (playerOne or (not playerOne and not playerTwo)): # отрисовка доски с точки зрения первого или второго игрока
         draw_gamestate(screen, Game_State)
-    else:
+    elif start and playerTwo:
         draw_gamestate_for_black(screen, Game_State)
 
     if Game_State.checkmate:
