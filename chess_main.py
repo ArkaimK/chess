@@ -4,7 +4,7 @@ import pygame
 import chess_engine, AI
 pygame.init()
 
-WIDTH = HEIGHT = 800
+WIDTH = HEIGHT = 840
 SQ_SIZE = WIDTH//8
 screen = pygame.display.set_mode((WIDTH+WIDTH*0.1+WIDTH*0.5, HEIGHT+WIDTH*0.1))
 Game_State = chess_engine.Game_State()
@@ -150,7 +150,7 @@ def draw_move_log(screen, move_notation_log):   ################################
                 counter = 0
     move_log_rect = pygame.Rect(WIDTH+WIDTH*0.1, (WIDTH//50)-SQ_SIZE, WIDTH*0.5, SQ_SIZE)
     pygame.draw.rect(screen, (32, 35, 42), move_log_rect)
-    move_log_rect = pygame.Rect(WIDTH+WIDTH*0.1, (WIDTH//50)*51, WIDTH*0.5, SQ_SIZE)
+    move_log_rect = pygame.Rect(WIDTH+WIDTH*0.1, (WIDTH//50)*51, WIDTH*0.5, SQ_SIZE*2)
     pygame.draw.rect(screen, (32, 35, 42), move_log_rect)
 
 def draw_endgame_text(screen, text):
@@ -158,7 +158,16 @@ def draw_endgame_text(screen, text):
     text_object = font.render(text, 0, SQ_BORDER_COLOR)
     text_location = pygame.Rect(0,0, WIDTH, HEIGHT).move(WIDTH/2 - text_object.get_width()/2, HEIGHT/2 - text_object.get_height()/2)
     screen.blit(text_object, text_location)
- 
+
+def draw_menu(screen):
+    font = pygame.font.SysFont('Helvicta', 32, True, False)
+    pygame.draw.rect(screen, (32, 35, 42), (0, 0, WIDTH+WIDTH*0.1+WIDTH*0.5, HEIGHT+WIDTH*0.1))
+    pygame.draw.rect(screen, 'Black', (SQ_SIZE*2+WIDTH*0.1, SQ_SIZE*2+WIDTH*0.1, SQ_SIZE*4, SQ_SIZE))
+    screen.blit(font.render('PLAY AS BLACK', 0, 'WHITE'), (SQ_SIZE*3+WIDTH*0.1, SQ_SIZE*2.5+WIDTH*0.1))
+    pygame.draw.rect(screen, 'White', (SQ_SIZE*2+WIDTH*0.1, SQ_SIZE*5+WIDTH*0.1, SQ_SIZE*4, SQ_SIZE))
+    screen.blit(font.render('PLAY AS WHITE', 0, 'BLACK'), (SQ_SIZE*3+WIDTH*0.1, SQ_SIZE*5.5+WIDTH*0.1))
+    pygame.draw.rect(screen, 'GRAY', (SQ_SIZE*2+WIDTH*0.1, SQ_SIZE*3.5+WIDTH*0.1, SQ_SIZE*4, SQ_SIZE))
+    screen.blit(font.render('RANDOM SIDE', 0, 'BLACK'), (SQ_SIZE*3+WIDTH*0.1, SQ_SIZE*4+WIDTH*0.1))
 #def main()
 #  if __name__ == "__main__":  
 #      main()   
@@ -168,8 +177,8 @@ mouse_position = (0, 0) #стартовая позиция мыши для activ
 last_click = () #(row, col)
 player_clicks = [] # [(row, col),(row, col)]
 running = True
-playerOne = True
-playerTwo = False
+playerOne = False
+playerTwo = True
 validmoves = Game_State.validmoves() #список легальных ходов для начала партии
 gameover = False
 move_was_made = False #флаг для вычисления легальных ходов только после совершения хода
@@ -235,6 +244,7 @@ while running:
                             move = chess_engine.move(player_clicks[0], player_clicks[1], Game_State.board, enpassant=True)
                         if move in validmoves:
                             Game_State.make_move(move)
+                            validmoves = Game_State.validmoves()
                             move_notation_log.append(move.get_movenotation(Game_State, validmoves))  ################################################
                             last_click = ()
                             player_clicks = []
@@ -253,6 +263,7 @@ while running:
     if not gameover and not human_turn:
         AImove = AI.random_move(validmoves)
         Game_State.make_move(AImove)
+        validmoves = Game_State.validmoves()
         move_notation_log.append(AImove.get_movenotation(Game_State, validmoves))               #####################################################
         move_was_made = True
         
